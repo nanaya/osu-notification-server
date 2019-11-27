@@ -59,7 +59,7 @@ export default class RedisSubscriber {
     }
 
     connections.forEach((connection) => connection.event(channel, messageString, message));
-    this.dogstatsd.increment('sent', connections.size);
+    this.dogstatsd.increment('sent', connections.size, { channel });
   }
 
   subscribe(channels: string | string[], connection: UserConnection) {
