@@ -28,12 +28,13 @@ interface Params {
 }
 
 interface OAuthJWT {
-  aud: string;
-  iat: number;
-  jti: string;
-  nbf: number;
-  scopes: string[];
-  sub: string;
+  aud: string; // oauth client id
+  exp: number; // expires at
+  iat: number; // issued at
+  jti: string; // token id
+  nbf: number; // valid after
+  scopes: string[]; // oauth scopes
+  sub: string; // user id
 }
 
 const isOAuthJWT = (arg: object|string): arg is OAuthJWT => {
@@ -79,7 +80,7 @@ export default class OAuthVerifier {
     const parsedToken = jwt.verify(token, this.oAuthTokenSignatureKey);
 
     if (isOAuthJWT(parsedToken)) {
-      return parsedToken.jti;
+      return parsedToken;
     }
   }
 
@@ -93,9 +94,15 @@ export default class OAuthVerifier {
     const [rows] = await this.db.execute<mysql.RowDataPacket[]>(`
       SELECT user_id, scopes
       FROM oauth_access_tokens
-      WHERE revoked = false AND expires_at > now() AND id = ?
+      WHERE revoked = false
+        AND expires_at > now()
+        AND id = ?
+        AND user_id = ?
+        AND client_id = ?
     `, [
-      oAuthToken,
+      oAuthToken.jti,
+      oAuthToken.sub,
+      oAuthToken.aud,
     ]);
 
     if (rows.length === 0) {
@@ -108,7 +115,7 @@ export default class OAuthVerifier {
     for (const scope of scopes) {
       if (scope === '*' || scope === 'read') {
         return {
-          key: `oauth:${oAuthToken}`,
+          key: `oauth:${oAuthToken.jti}`,
           requiresVerification: false,
           userId,
           verified: false,
