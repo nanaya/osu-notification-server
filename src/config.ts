@@ -74,10 +74,12 @@ const config: Config = {
   appKey: process.env.APP_KEY,
   baseDir,
   db: {
+    charset: 'utf8mb4',
     database: process.env.DB_DATABASE || 'osu',
     host: process.env.DB_HOST || 'localhost',
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT ? +process.env.DB_PORT : undefined,
+    timezone: 'Z',
     user: process.env.DB_USERNAME || 'osuweb',
   },
   dbName: {
