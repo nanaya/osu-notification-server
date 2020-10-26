@@ -17,6 +17,7 @@
  */
 
 export default interface UserSession {
+  expiresAt?: Date;
   ip?: string;
   key: string;
   requiresVerification: boolean;

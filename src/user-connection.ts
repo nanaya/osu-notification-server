@@ -56,6 +56,13 @@ export default class UserConnection {
     this.ws.on('pong', this.heartbeatOnline);
     this.heartbeatInterval = setInterval(this.heartbeat, 20000);
     logger.debug(`user ${this.session.userId} (${this.session.ip}) connected`);
+
+    if (this.session.expiresAt != null) {
+      const currentTimeMs = (new Date()).getTime();
+      const expiresAtMs = this.session.expiresAt.getTime();
+
+      setTimeout(this.close, expiresAtMs - currentTimeMs);
+    }
   }
 
   close = () => {
