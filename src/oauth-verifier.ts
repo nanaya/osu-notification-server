@@ -50,7 +50,7 @@ export default class OAuthVerifier {
     this.oAuthTokenSignatureKey = fs.readFileSync(`${params.baseDir}/oauth-public.key`);
   }
 
-  getToken = (req: http.IncomingMessage) => {
+  getToken = (req: http.IncomingMessage): void | OAuthJWT => {
     let token;
     const authorization = req.headers.authorization;
 
@@ -80,7 +80,7 @@ export default class OAuthVerifier {
     const parsedToken = jwt.verify(token, this.oAuthTokenSignatureKey);
 
     if (isOAuthJWT(parsedToken)) {
-      return parsedToken.jti;
+      return parsedToken;
     }
   }
 
@@ -94,9 +94,17 @@ export default class OAuthVerifier {
     const [rows] = await this.db.execute<mysql.RowDataPacket[]>(`
       SELECT user_id, scopes
       FROM oauth_access_tokens
-      WHERE revoked = false AND expires_at > now() AND id = ?
+      WHERE revoked = false
+        AND expires_at > now()
+        AND id = ?
+        AND user_id = ?
+        AND client_id = ?
     `, [
-      oAuthToken,
+      oAuthToken.jti,
+      // This will be empty string for tokens without user id (client grants)
+      // and thus prevent them from connecting.
+      oAuthToken.sub,
+      oAuthToken.aud,
     ]);
 
     if (rows.length === 0) {
@@ -109,7 +117,7 @@ export default class OAuthVerifier {
     for (const scope of scopes) {
       if (scope === '*' || scope === 'read') {
         return {
-          key: `oauth:${oAuthToken}`,
+          key: `oauth:${oAuthToken.jti}`,
           requiresVerification: false,
           userId,
           verified: false,
