@@ -101,7 +101,7 @@ export default class OAuthVerifier {
         AND client_id = ?
     `, [
       oAuthToken.jti,
-      oAuthToken.sub,
+      oAuthToken.sub, // this prevents getting token with null user id (client grant)
       oAuthToken.aud,
     ]);
 
