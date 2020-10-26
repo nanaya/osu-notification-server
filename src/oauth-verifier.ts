@@ -28,12 +28,13 @@ interface Params {
 }
 
 interface OAuthJWT {
-  aud: string;
-  iat: number;
-  jti: string;
-  nbf: number;
-  scopes: string[];
-  sub: string;
+  aud: string; // oauth client id
+  exp: number; // expires at
+  iat: number; // issued at
+  jti: string; // token id
+  nbf: number; // valid after
+  scopes: string[]; // oauth scopes
+  sub: string; // user id
 }
 
 const isOAuthJWT = (arg: object|string): arg is OAuthJWT => {
