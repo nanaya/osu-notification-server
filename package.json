@@ -20,7 +20,7 @@
     "dotenv": "^7.0.0",
     "hot-shots": "^6.2.0",
     "jsonwebtoken": "^8.4.0",
-    "mysql2": "^1.6.4",
+    "mysql2": "^2.2.5",
     "php-serialize": "^4.0.2",
     "redis": "^2.8.0",
     "source-map-support": "^0.5.10",

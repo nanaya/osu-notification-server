@@ -92,7 +92,7 @@ export default class OAuthVerifier {
     }
 
     const [rows] = await this.db.execute<mysql.RowDataPacket[]>(`
-      SELECT user_id, scopes
+      SELECT user_id, scopes, expires_at
       FROM oauth_access_tokens
       WHERE revoked = false
         AND expires_at > now()
@@ -111,12 +111,14 @@ export default class OAuthVerifier {
       throw new Error('token doesn\'t exist');
     }
 
-    const userId = rows[0].user_id;
-    const scopes = JSON.parse(rows[0].scopes);
+    const expiresAt: Date = rows[0].expires_at;
+    const scopes: string[] = JSON.parse(rows[0].scopes);
+    const userId: number = rows[0].user_id;
 
     for (const scope of scopes) {
       if (scope === '*' || scope === 'read') {
         return {
+          expiresAt,
           key: `oauth:${oAuthToken.jti}`,
           requiresVerification: false,
           userId,
