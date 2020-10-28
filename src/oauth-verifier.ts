@@ -91,7 +91,13 @@ export default class OAuthVerifier {
       return null;
     }
 
-    const [rows] = await this.db.execute<mysql.RowDataPacket[]>(`
+    interface TokenRow extends mysql.RowDataPacket {
+      expires_at: Date;
+      scopes: string; // "scopes = ?" won't return null
+      user_id: number; // "user_id = ?" won't return null
+    }
+
+    const [rows] = await this.db.execute<TokenRow[]>(`
       SELECT user_id, scopes, expires_at
       FROM oauth_access_tokens
       WHERE revoked = false
@@ -111,9 +117,9 @@ export default class OAuthVerifier {
       throw new Error('token doesn\'t exist');
     }
 
-    const expiresAt: Date = rows[0].expires_at;
-    const scopes: string[] = JSON.parse(rows[0].scopes);
-    const userId: number = rows[0].user_id;
+    const expiresAt = rows[0].expires_at;
+    const scopes = JSON.parse(rows[0].scopes) as string[];
+    const userId = rows[0].user_id;
 
     for (const scope of scopes) {
       if (scope === '*' || scope === 'read') {
