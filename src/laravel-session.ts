@@ -11,6 +11,7 @@ import * as redis from 'redis';
 
 interface Params {
   appKey: string;
+  bypassVerification: boolean;
   redisConfig: redis.ClientOpts;
 }
 
@@ -48,12 +49,14 @@ const getCookie = (req: http.IncomingMessage, key: string) => {
 };
 
 export default class LaravelSession {
+  private bypassVerification: boolean;
   private key: Buffer;
   private redis: redis.RedisClient;
   private redisGet: any;
   private sessionCookieNameHmac: Buffer;
 
   constructor(params: Params) {
+    this.bypassVerification = params.bypassVerification;
     this.redis = redis.createClient(params.redisConfig);
     this.redisGet = promisify(this.redis.get).bind(this.redis);
     this.key = Buffer.from(params.appKey.slice('base64:'.length), 'base64');
@@ -80,7 +83,7 @@ export default class LaravelSession {
       key,
       requiresVerification: rawData.requires_verification,
       userId,
-      verified: rawData.verified,
+      verified: this.bypassVerification || rawData.verified,
     };
   }
 

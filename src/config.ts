@@ -11,6 +11,7 @@ import { ServerOptions as ServerConfig } from 'ws';
 interface Config {
   appKey: string;
   baseDir: string;
+  bypassVerification: boolean;
   db: DbConfig;
   dbName: DbNames;
   debug: boolean;
@@ -58,6 +59,7 @@ const redisRetry = (type: string) => (options: RedisRetryStrategyOptions) => {
 const config: Config = {
   appKey: process.env.APP_KEY,
   baseDir,
+  bypassVerification: ['1', 'true'].includes(process.env.USER_BYPASS_VERIFICATION ?? ''),
   db: {
     database: process.env.DB_DATABASE || 'osu',
     host: process.env.DB_HOST || 'localhost',
