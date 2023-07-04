@@ -21,7 +21,7 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            pppy/osu-notification-server
+            nanaya/osu-notification-server
           # generate Docker tags based on the following events/attributes
           # on tag event: tag using git tag, and as latest if the tag doesn't contain hyphens (pre-releases)
           # on push event: tag using git sha, branch name and as latest-dev
@@ -47,7 +47,9 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: linux/amd64
+          platforms:
+            - linux/amd64
+            - linux/arm64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
